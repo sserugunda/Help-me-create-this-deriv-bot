@@ -412,7 +412,179 @@
                   </block>
                 </statement>
                 <next>
-                  <block type="controls_if" id="fpAq-74QItZ*7`.5tz9n">
+                  <block type="variables_set" id="ATR_TR_SET_BEFORE_ID">
+                    <field name="VAR" id="TR_VARIABLE_ID">TR</field>
+                    <value name="VALUE">
+                      <block type="math_on_list" id="ATR_TR_MAX_BEFORE_ID">
+                        <field name="OP">MAX</field>
+                        <value name="LIST">
+                          <block type="lists_create_with" id="ATR_TR_LIST_BEFORE_ID">
+                            <mutation items="3"></mutation>
+                            <value name="ADD0">
+                              <block type="math_arithmetic" id="ATR_TR1_BEFORE_ID">
+                                <field name="OP">MINUS</field>
+                                <value name="A">
+                                  <block type="read_ohlc" id="ATR_READ_HIGH_2_BEFORE_ID">
+                                    <field name="OHLCFIELD_LIST">high</field>
+                                    <field name="CANDLEINTERVAL_LIST">60</field>
+                                    <value name="CANDLEINDEX">
+                                      <shadow type="math_number" id="ATR_IDX2_HIGH_BEFORE_SHADOW">
+                                        <field name="NUM">2</field>
+                                      </shadow>
+                                    </value>
+                                  </block>
+                                </value>
+                                <value name="B">
+                                  <block type="read_ohlc" id="ATR_READ_LOW_2_BEFORE_ID">
+                                    <field name="OHLCFIELD_LIST">low</field>
+                                    <field name="CANDLEINTERVAL_LIST">60</field>
+                                    <value name="CANDLEINDEX">
+                                      <shadow type="math_number" id="ATR_IDX2_LOW_BEFORE_SHADOW">
+                                        <field name="NUM">2</field>
+                                      </shadow>
+                                    </value>
+                                  </block>
+                                </value>
+                              </block>
+                            </value>
+                            <value name="ADD1">
+                              <block type="math_single" id="ATR_ABS1_BEFORE_ID">
+                                <field name="OP">ABS</field>
+                                <value name="NUM">
+                                  <block type="math_arithmetic" id="ATR_TR2_BEFORE_ID">
+                                    <field name="OP">MINUS</field>
+                                    <value name="A">
+                                      <block type="read_ohlc" id="ATR_READ_HIGH_2B_BEFORE_ID">
+                                        <field name="OHLCFIELD_LIST">high</field>
+                                        <field name="CANDLEINTERVAL_LIST">60</field>
+                                        <value name="CANDLEINDEX">
+                                          <shadow type="math_number" id="ATR_IDX2_HIGHB_BEFORE_SHADOW">
+                                            <field name="NUM">2</field>
+                                          </shadow>
+                                        </value>
+                                      </block>
+                                    </value>
+                                    <value name="B">
+                                      <block type="read_ohlc" id="ATR_READ_CLOSE_3_BEFORE_ID">
+                                        <field name="OHLCFIELD_LIST">close</field>
+                                        <field name="CANDLEINTERVAL_LIST">60</field>
+                                        <value name="CANDLEINDEX">
+                                          <shadow type="math_number" id="ATR_IDX3_CLOSE_BEFORE_SHADOW">
+                                            <field name="NUM">3</field>
+                                          </shadow>
+                                        </value>
+                                      </block>
+                                    </value>
+                                  </block>
+                                </value>
+                              </block>
+                            </value>
+                            <value name="ADD2">
+                              <block type="math_single" id="ATR_ABS2_BEFORE_ID">
+                                <field name="OP">ABS</field>
+                                <value name="NUM">
+                                  <block type="math_arithmetic" id="ATR_TR3_BEFORE_ID">
+                                    <field name="OP">MINUS</field>
+                                    <value name="A">
+                                      <block type="read_ohlc" id="ATR_READ_LOW_2B_BEFORE_ID">
+                                        <field name="OHLCFIELD_LIST">low</field>
+                                        <field name="CANDLEINTERVAL_LIST">60</field>
+                                        <value name="CANDLEINDEX">
+                                          <shadow type="math_number" id="ATR_IDX2_LOWB_BEFORE_SHADOW">
+                                            <field name="NUM">2</field>
+                                          </shadow>
+                                        </value>
+                                      </block>
+                                    </value>
+                                    <value name="B">
+                                      <block type="read_ohlc" id="ATR_READ_CLOSE_3B_BEFORE_ID">
+                                        <field name="OHLCFIELD_LIST">close</field>
+                                        <field name="CANDLEINTERVAL_LIST">60</field>
+                                        <value name="CANDLEINDEX">
+                                          <shadow type="math_number" id="ATR_IDX3_CLOSEB_BEFORE_SHADOW">
+                                            <field name="NUM">3</field>
+                                          </shadow>
+                                        </value>
+                                      </block>
+                                    </value>
+                                  </block>
+                                </value>
+                              </block>
+                            </value>
+                          </block>
+                        </value>
+                      </block>
+                    </value>
+                    <next>
+                      <block type="controls_if" id="ATR_UPDATE_IF_BEFORE_ID">
+                        <mutation xmlns="http://www.w3.org/1999/xhtml" else="1"></mutation>
+                        <value name="IF0">
+                          <block type="logic_compare" id="ATR_PREV_GT_ZERO_BEFORE_ID">
+                            <field name="OP">GT</field>
+                            <value name="A">
+                              <block type="variables_get" id="ATR_GET_PREV_BEFORE_ID">
+                                <field name="VAR" id="ATR_VARIABLE_ID">ATR</field>
+                              </block>
+                            </value>
+                            <value name="B">
+                              <block type="math_number" id="ATR_ZERO_BEFORE_ID">
+                                <field name="NUM">0</field>
+                              </block>
+                            </value>
+                          </block>
+                        </value>
+                        <statement name="DO0">
+                          <block type="variables_set" id="ATR_SET_SMOOTH_BEFORE_ID">
+                            <field name="VAR" id="ATR_VARIABLE_ID">ATR</field>
+                            <value name="VALUE">
+                              <block type="math_arithmetic" id="ATR_DIV_FINAL_BEFORE_ID">
+                                <field name="OP">DIVIDE</field>
+                                <value name="A">
+                                  <block type="math_arithmetic" id="ATR_ADD_SUM_BEFORE_ID">
+                                    <field name="OP">ADD</field>
+                                    <value name="A">
+                                      <block type="math_arithmetic" id="ATR_MULT_PREV_BEFORE_ID">
+                                        <field name="OP">MULTIPLY</field>
+                                        <value name="A">
+                                          <block type="variables_get" id="ATR_GET_PREV2_BEFORE_ID">
+                                            <field name="VAR" id="ATR_VARIABLE_ID">ATR</field>
+                                          </block>
+                                        </value>
+                                        <value name="B">
+                                          <block type="math_number" id="ATR_N_MINUS_1_BEFORE_ID">
+                                            <field name="NUM">13</field>
+                                          </block>
+                                        </value>
+                                      </block>
+                                    </value>
+                                    <value name="B">
+                                      <block type="variables_get" id="TR_GET_BEFORE_ID">
+                                        <field name="VAR" id="TR_VARIABLE_ID">TR</field>
+                                      </block>
+                                    </value>
+                                  </block>
+                                </value>
+                                <value name="B">
+                                  <block type="math_number" id="ATR_PERIOD_BEFORE_ID">
+                                    <field name="NUM">14</field>
+                                  </block>
+                                </value>
+                              </block>
+                            </value>
+                          </block>
+                        </statement>
+                        <statement name="ELSE">
+                          <block type="variables_set" id="ATR_SET_INIT_BEFORE_ID">
+                            <field name="VAR" id="ATR_VARIABLE_ID">ATR</field>
+                            <value name="VALUE">
+                              <block type="variables_get" id="TR_GET_INIT_BEFORE_ID">
+                                <field name="VAR" id="TR_VARIABLE_ID">TR</field>
+                              </block>
+                            </value>
+                          </block>
+                        </statement>
+                        <next>
+                          <block type="controls_if" id="fpAq-74QItZ*7`.5tz9n">
                     <value name="IF0">
                       <block type="logic_operation" id="M$v.ZD(MINpEW`ty%()/">
                         <field name="OP">AND</field>

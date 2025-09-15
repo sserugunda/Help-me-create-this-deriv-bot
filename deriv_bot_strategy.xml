@@ -8,6 +8,8 @@
     <variable id="I-^H[P!kW+3nG.bez=wo">RSI 2min</variable>
     <variable id="znuW$N0g{kfu%EfE_T-Y">rsi</variable>
     <variable id="f0SJ(iKN)^#Ct0NAiM(J">text</variable>
+    <variable id="ATR_VARIABLE_ID">ATR</variable>
+    <variable id="TR_VARIABLE_ID">TR</variable>
   </variables>
   <block type="trade_definition" id="zb)!~_*l:VR!F*.1igs%" deletable="false" x="0" y="60">
     <statement name="TRADE_OPTIONS">
@@ -134,64 +136,210 @@
               </shadow>
             </value>
             <next>
-              <block type="controls_if" id="eh_GBU,F,8Iw24Srx]hF">
-                <mutation xmlns="http://www.w3.org/1999/xhtml" else="1"></mutation>
-                <value name="IF0">
-                  <block type="logic_operation" id="oExrLp8[|$b9yTK-El](">
-                    <field name="OP">OR</field>
-                    <value name="A">
-                      <block type="logic_compare" id="mMxmppVkppeRyKlhZZ}2">
-                        <field name="OP">GTE</field>
-                        <value name="A">
-                          <block type="total_profit" id="e{34Jk@`oo}s}fJ=5-os"></block>
-                        </value>
-                        <value name="B">
-                          <block type="variables_get" id="|A|c]$B?$bZ6LYK`JuvE">
-                            <field name="VAR" id="/(;+T`fHhEKq{L5^kqK=">Take Profit</field>
+              <block type="variables_set" id="ATR_TR_SET_AFTER_ID">
+                <field name="VAR" id="TR_VARIABLE_ID">TR</field>
+                <value name="VALUE">
+                  <block type="math_on_list" id="ATR_TR_MAX_AFTER_ID">
+                    <field name="OP">MAX</field>
+                    <value name="LIST">
+                      <block type="lists_create_with" id="ATR_TR_LIST_AFTER_ID">
+                        <mutation items="3"></mutation>
+                        <value name="ADD0">
+                          <block type="math_arithmetic" id="ATR_TR1_AFTER_ID">
+                            <field name="OP">MINUS</field>
+                            <value name="A">
+                              <block type="read_ohlc" id="ATR_READ_HIGH_2_AFTER_ID">
+                                <field name="OHLCFIELD_LIST">high</field>
+                                <field name="CANDLEINTERVAL_LIST">60</field>
+                                <value name="CANDLEINDEX">
+                                  <shadow type="math_number" id="ATR_IDX2_HIGH_AFTER_SHADOW">
+                                    <field name="NUM">2</field>
+                                  </shadow>
+                                </value>
+                              </block>
+                            </value>
+                            <value name="B">
+                              <block type="read_ohlc" id="ATR_READ_LOW_2_AFTER_ID">
+                                <field name="OHLCFIELD_LIST">low</field>
+                                <field name="CANDLEINTERVAL_LIST">60</field>
+                                <value name="CANDLEINDEX">
+                                  <shadow type="math_number" id="ATR_IDX2_LOW_AFTER_SHADOW">
+                                    <field name="NUM">2</field>
+                                  </shadow>
+                                </value>
+                              </block>
+                            </value>
                           </block>
                         </value>
-                      </block>
-                    </value>
-                    <value name="B">
-                      <block type="logic_compare" id="O-_9D~.,}fq@,+)XNaVO">
-                        <field name="OP">GTE</field>
-                        <value name="A">
-                          <block type="variables_get" id="0I]hS^B(JX!?H=3=j}k#">
-                            <field name="VAR" id="urqkLIuX}xR`v{t?TzLK">Total Trades</field>
+                        <value name="ADD1">
+                          <block type="math_single" id="ATR_ABS1_AFTER_ID">
+                            <field name="OP">ABS</field>
+                            <value name="NUM">
+                              <block type="math_arithmetic" id="ATR_TR2_AFTER_ID">
+                                <field name="OP">MINUS</field>
+                                <value name="A">
+                                  <block type="read_ohlc" id="ATR_READ_HIGH_2B_AFTER_ID">
+                                    <field name="OHLCFIELD_LIST">high</field>
+                                    <field name="CANDLEINTERVAL_LIST">60</field>
+                                    <value name="CANDLEINDEX">
+                                      <shadow type="math_number" id="ATR_IDX2_HIGHB_AFTER_SHADOW">
+                                        <field name="NUM">2</field>
+                                      </shadow>
+                                    </value>
+                                  </block>
+                                </value>
+                                <value name="B">
+                                  <block type="read_ohlc" id="ATR_READ_CLOSE_3_AFTER_ID">
+                                    <field name="OHLCFIELD_LIST">close</field>
+                                    <field name="CANDLEINTERVAL_LIST">60</field>
+                                    <value name="CANDLEINDEX">
+                                      <shadow type="math_number" id="ATR_IDX3_CLOSE_AFTER_SHADOW">
+                                        <field name="NUM">3</field>
+                                      </shadow>
+                                    </value>
+                                  </block>
+                                </value>
+                              </block>
+                            </value>
                           </block>
                         </value>
-                        <value name="B">
-                          <block type="math_number" id="O$25TEuB)?3hpW27MS?g">
-                            <field name="NUM">10</field>
+                        <value name="ADD2">
+                          <block type="math_single" id="ATR_ABS2_AFTER_ID">
+                            <field name="OP">ABS</field>
+                            <value name="NUM">
+                              <block type="math_arithmetic" id="ATR_TR3_AFTER_ID">
+                                <field name="OP">MINUS</field>
+                                <value name="A">
+                                  <block type="read_ohlc" id="ATR_READ_LOW_2B_AFTER_ID">
+                                    <field name="OHLCFIELD_LIST">low</field>
+                                    <field name="CANDLEINTERVAL_LIST">60</field>
+                                    <value name="CANDLEINDEX">
+                                      <shadow type="math_number" id="ATR_IDX2_LOWB_AFTER_SHADOW">
+                                        <field name="NUM">2</field>
+                                      </shadow>
+                                    </value>
+                                  </block>
+                                </value>
+                                <value name="B">
+                                  <block type="read_ohlc" id="ATR_READ_CLOSE_3B_AFTER_ID">
+                                    <field name="OHLCFIELD_LIST">close</field>
+                                    <field name="CANDLEINTERVAL_LIST">60</field>
+                                    <value name="CANDLEINDEX">
+                                      <shadow type="math_number" id="ATR_IDX3_CLOSEB_AFTER_SHADOW">
+                                        <field name="NUM">3</field>
+                                      </shadow>
+                                    </value>
+                                  </block>
+                                </value>
+                              </block>
+                            </value>
                           </block>
                         </value>
                       </block>
                     </value>
                   </block>
                 </value>
-                <statement name="DO0">
-                  <block type="notify" id="LOikkgS[J9I=cBf_^gcL">
-                    <field name="NOTIFICATION_TYPE">success</field>
-                    <field name="NOTIFICATION_SOUND">job-done</field>
-                    <value name="MESSAGE">
-                      <shadow type="text" id="ZsYdeGF6JtxaQX:[L:_h">
-                        <field name="TEXT">💲💲💲💲</field>
-                      </shadow>
+                <next>
+                  <block type="variables_set" id="ATR_SET_AFTER_ID">
+                    <field name="VAR" id="ATR_VARIABLE_ID">ATR</field>
+                    <value name="VALUE">
+                      <block type="math_arithmetic" id="ATR_DIV_FINAL_AFTER_ID">
+                        <field name="OP">DIVIDE</field>
+                        <value name="A">
+                          <block type="math_arithmetic" id="ATR_ADD_SUM_AFTER_ID">
+                            <field name="OP">ADD</field>
+                            <value name="A">
+                              <block type="math_arithmetic" id="ATR_MULT_PREV_AFTER_ID">
+                                <field name="OP">MULTIPLY</field>
+                                <value name="A">
+                                  <block type="variables_get" id="ATR_GET_PREV_AFTER_ID">
+                                    <field name="VAR" id="ATR_VARIABLE_ID">ATR</field>
+                                  </block>
+                                </value>
+                                <value name="B">
+                                  <block type="math_number" id="ATR_N_MINUS_1_AFTER_ID">
+                                    <field name="NUM">13</field>
+                                  </block>
+                                </value>
+                              </block>
+                            </value>
+                            <value name="B">
+                              <block type="variables_get" id="TR_GET_AFTER_ID">
+                                <field name="VAR" id="TR_VARIABLE_ID">TR</field>
+                              </block>
+                            </value>
+                          </block>
+                        </value>
+                        <value name="B">
+                          <block type="math_number" id="ATR_PERIOD_AFTER_ID">
+                            <field name="NUM">14</field>
+                          </block>
+                        </value>
+                      </block>
                     </value>
                     <next>
-                      <block type="text_print" id="zG6S`Cuq%^vdyVlpHZJE">
-                        <value name="TEXT">
-                          <shadow type="text" id="Djtl.s6jb}}%=wQF8NU}">
-                            <field name="TEXT">💲💲💲💲</field>
-                          </shadow>
+                      <block type="controls_if" id="eh_GBU,F,8Iw24Srx]hF">
+                        <mutation xmlns="http://www.w3.org/1999/xhtml" else="1"></mutation>
+                        <value name="IF0">
+                          <block type="logic_operation" id="oExrLp8[|$b9yTK-El](">
+                            <field name="OP">OR</field>
+                            <value name="A">
+                              <block type="logic_compare" id="mMxmppVkppeRyKlhZZ}2">
+                                <field name="OP">GTE</field>
+                                <value name="A">
+                                  <block type="total_profit" id="e{34Jk@`oo}s}fJ=5-os"></block>
+                                </value>
+                                <value name="B">
+                                  <block type="variables_get" id="|A|c]$B?$bZ6LYK`JuvE">
+                                    <field name="VAR" id="/(;+T`fHhEKq{L5^kqK=">Take Profit</field>
+                                  </block>
+                                </value>
+                              </block>
+                            </value>
+                            <value name="B">
+                              <block type="logic_compare" id="O-_9D~.,}fq@,+)XNaVO">
+                                <field name="OP">GTE</field>
+                                <value name="A">
+                                  <block type="variables_get" id="0I]hS^B(JX!?H=3=j}k#">
+                                    <field name="VAR" id="urqkLIuX}xR`v{t?TzLK">Total Trades</field>
+                                  </block>
+                                </value>
+                                <value name="B">
+                                  <block type="math_number" id="O$25TEuB)?3hpW27MS?g">
+                                    <field name="NUM">10</field>
+                                  </block>
+                                </value>
+                              </block>
+                            </value>
+                          </block>
                         </value>
+                        <statement name="DO0">
+                          <block type="notify" id="LOikkgS[J9I=cBf_^gcL">
+                            <field name="NOTIFICATION_TYPE">success</field>
+                            <field name="NOTIFICATION_SOUND">job-done</field>
+                            <value name="MESSAGE">
+                              <shadow type="text" id="ZsYdeGF6JtxaQX:[L:_h">
+                                <field name="TEXT">💲💲💲💲</field>
+                              </shadow>
+                            </value>
+                            <next>
+                              <block type="text_print" id="zG6S`Cuq%^vdyVlpHZJE">
+                                <value name="TEXT">
+                                  <shadow type="text" id="Djtl.s6jb}}%=wQF8NU}">
+                                    <field name="TEXT">💲💲💲💲</field>
+                                  </shadow>
+                                </value>
+                              </block>
+                            </next>
+                          </block>
+                        </statement>
+                        <statement name="ELSE">
+                          <block type="trade_again" id=":ZgeLt#/=:*UB~aQsQ,L"></block>
+                        </statement>
                       </block>
                     </next>
                   </block>
-                </statement>
-                <statement name="ELSE">
-                  <block type="trade_again" id=":ZgeLt#/=:*UB~aQsQ,L"></block>
-                </statement>
+                </next>
               </block>
             </next>
           </block>

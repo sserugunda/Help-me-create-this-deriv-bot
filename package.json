@@ -1,0 +1,23 @@
+{
+  "name": "deriv-trading-bot",
+  "version": "1.0.0",
+  "description": "Automated trading bot for Deriv synthetic indices with Telegram signal notifications",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [
+    "deriv",
+    "trading",
+    "bot",
+    "telegram",
+    "binary-options"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@deriv/deriv-api": "^1.0.14",
+    "node-telegram-bot-api": "^0.64.0",
+    "ws": "^8.14.2"
+  }
+}

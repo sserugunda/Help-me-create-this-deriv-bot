@@ -1,0 +1,6 @@
+{
+  "derivAppId": "YOUR_DERIV_APP_ID",
+  "derivToken": "YOUR_DERIV_API_TOKEN",
+  "telegramToken": "YOUR_TELEGRAM_BOT_TOKEN",
+  "telegramChatId": "YOUR_TELEGRAM_CHAT_ID"
+}

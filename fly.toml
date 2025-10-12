@@ -1,0 +1,13 @@
+app = "deriv-bot"
+primary_region = "iad"
+kill_signal = "SIGINT"
+kill_timeout = 5
+
+[build]
+  dockerfile = "Dockerfile"
+
+[processes]
+  app = "python deriv_bot.py"
+
+# No HTTP service; this runs as a background worker
+# Scale with: fly scale count 1

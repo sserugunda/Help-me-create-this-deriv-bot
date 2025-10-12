@@ -38,6 +38,11 @@ fly secrets set \
   ENTRY_SECOND_THRESHOLD="${ENTRY_SECOND_THRESHOLD:-58}" \
   TRADE_DURATION_SECONDS="${TRADE_DURATION_SECONDS:-55}" \
   MAX_SYMBOLS="${MAX_SYMBOLS:-13}" \
+  HTF_ENABLED="${HTF_ENABLED:-false}" \
+  HTF_GRANULARITY="${HTF_GRANULARITY:-3600}" \
+  HTF_FILTER="${HTF_FILTER:-ema}" \
+  HTF_EMA_PERIOD="${HTF_EMA_PERIOD:-50}" \
+  HTF_RSI_PERIOD="${HTF_RSI_PERIOD:-14}" \
   --app "$APP_NAME"
 
 # Deploy (remote build to avoid local Docker requirement)

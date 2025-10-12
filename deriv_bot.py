@@ -26,6 +26,13 @@ EMA_PERIOD = int(os.getenv("EMA_PERIOD", "50"))
 RSI_UPPER = float(os.getenv("RSI_UPPER", "55"))
 RSI_LOWER = float(os.getenv("RSI_LOWER", "45"))
 
+# Higher Timeframe (HTF) filter (optional)
+HTF_ENABLED = os.getenv("HTF_ENABLED", "false").lower() in {"1", "true", "yes", "on"}
+HTF_GRANULARITY = int(os.getenv("HTF_GRANULARITY", "3600"))  # 3600 (1h) or 14400 (4h)
+HTF_FILTER = os.getenv("HTF_FILTER", "ema").lower()  # 'ema' or 'color'
+HTF_EMA_PERIOD = int(os.getenv("HTF_EMA_PERIOD", "50"))
+HTF_RSI_PERIOD = int(os.getenv("HTF_RSI_PERIOD", "14"))
+
 # Candle history sizes
 CANDLES_1M_COUNT = int(os.getenv("CANDLES_1M_COUNT", "250"))
 CANDLES_2M_COUNT = int(os.getenv("CANDLES_2M_COUNT", "150"))
@@ -246,7 +253,13 @@ async def select_volatility_symbols(client: DerivWSClient, limit: int) -> List[s
 def candle_color(open_price: float, close_price: float) -> str:
     return 'G' if close_price > open_price else 'R'
 
-def evaluate_signal(closes_1m: List[float], closes_2m: List[float], candles_3m: List[Dict[str, Any]]) -> int:
+def evaluate_signal(
+    closes_1m: List[float],
+    closes_2m: List[float],
+    candles_3m: List[Dict[str, Any]],
+    htf_closes: Optional[List[float]] = None,
+    htf_candles: Optional[List[Dict[str, Any]]] = None,
+) -> int:
     ema50 = compute_ema(closes_1m, EMA_PERIOD)
     rsi1 = compute_rsi_wilder(closes_1m, RSI_PERIOD)
     rsi2 = compute_rsi_wilder(closes_2m, RSI_PERIOD)
@@ -259,8 +272,37 @@ def evaluate_signal(closes_1m: List[float], closes_2m: List[float], candles_3m: 
     col1 = candle_color(float(c1["open"]), float(c1["close"]))
     col2 = candle_color(float(c2["open"]), float(c2["close"]))
 
-    call_ok = (rsi1 > RSI_UPPER and rsi2 > RSI_UPPER and col1 == 'G' and col2 == 'G' and last_close > ema50)
-    put_ok = (rsi1 < RSI_LOWER and rsi2 < RSI_LOWER and col1 == 'R' and col2 == 'R' and last_close < ema50)
+    # Optional HTF gating
+    htf_bull_ok = True
+    htf_bear_ok = True
+    if HTF_ENABLED:
+        # Require HTF inputs to be present
+        if not htf_closes or not htf_candles:
+            return 0
+        last_htf_close = float(htf_closes[-1])
+        if HTF_FILTER == "ema":
+            ema_htf = compute_ema(htf_closes, HTF_EMA_PERIOD)
+            if ema_htf is None:
+                return 0
+            htf_bull_ok = last_htf_close > ema_htf
+            htf_bear_ok = last_htf_close < ema_htf
+        elif HTF_FILTER == "color":
+            if len(htf_candles) < 1:
+                return 0
+            last_htf = htf_candles[-1]
+            htf_col = candle_color(float(last_htf["open"]), float(last_htf["close"]))
+            htf_bull_ok = htf_col == 'G'
+            htf_bear_ok = htf_col == 'R'
+        else:
+            # Unknown filter type
+            return 0
+
+    call_ok = (
+        rsi1 > RSI_UPPER and rsi2 > RSI_UPPER and col1 == 'G' and col2 == 'G' and last_close > ema50 and htf_bull_ok
+    )
+    put_ok = (
+        rsi1 < RSI_LOWER and rsi2 < RSI_LOWER and col1 == 'R' and col2 == 'R' and last_close < ema50 and htf_bear_ok
+    )
 
     if call_ok:
         return 1
@@ -288,6 +330,17 @@ async def symbol_worker(symbol: str):
                         c1m = await client.get_candles(symbol, 60, CANDLES_1M_COUNT)
                         c2m = await client.get_candles(symbol, 120, CANDLES_2M_COUNT)
                         c3m = await client.get_candles(symbol, 180, CANDLES_3M_COUNT)
+                        # Optional HTF candles
+                        htf_closes: Optional[List[float]] = None
+                        htf_candles: Optional[List[Dict[str, Any]]] = None
+                        if HTF_ENABLED:
+                            # Ensure allowed granularity
+                            if HTF_GRANULARITY not in (3600, 14400):
+                                raise RuntimeError("HTF_GRANULARITY must be 3600 (1h) or 14400 (4h)")
+                            htf_needed =  max(HTF_EMA_PERIOD + 2, 60) if HTF_FILTER == "ema" else 5
+                            hc = await client.get_candles(symbol, HTF_GRANULARITY, htf_needed)
+                            htf_candles = hc
+                            htf_closes = [float(x["close"]) for x in hc]
                     except Exception as e:
                         print(f"[{symbol}] Candle fetch error: {e}")
                         await asyncio.sleep(1.5)
@@ -295,7 +348,7 @@ async def symbol_worker(symbol: str):
 
                     closes_1m = [float(c["close"]) for c in c1m]
                     closes_2m = [float(c["close"]) for c in c2m]
-                    direction = evaluate_signal(closes_1m, closes_2m, c3m)
+                    direction = evaluate_signal(closes_1m, closes_2m, c3m, htf_closes, htf_candles)
 
                     if direction != 0:
                         side = "CALL" if direction == 1 else "PUT"

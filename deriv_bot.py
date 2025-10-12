@@ -32,6 +32,7 @@ CANDLES_2M_COUNT = int(os.getenv("CANDLES_2M_COUNT", "150"))
 CANDLES_3M_COUNT = int(os.getenv("CANDLES_3M_COUNT", "30"))
 
 MAX_SYMBOLS = int(os.getenv("MAX_SYMBOLS", "13"))
+SYMBOLS_CSV = os.getenv("SYMBOLS_CSV", "")
 
 CURRENCY: Optional[str] = None
 
@@ -164,6 +165,58 @@ class DerivWSClient:
 
 async def select_volatility_symbols(client: DerivWSClient, limit: int) -> List[str]:
     symbols = await client.active_symbols()
+
+    # Build lookup sets
+    active_by_symbol = {s.get("symbol"): s for s in symbols if s.get("symbol")}
+    active_symbols = set(active_by_symbol.keys())
+
+    # If user provided explicit list, honor it with robust mapping
+    if SYMBOLS_CSV.strip():
+        requested = [x.strip() for x in SYMBOLS_CSV.split(',') if x.strip()]
+
+        # Synonym candidates per requested code (ordered fallbacks)
+        def candidates(code: str) -> List[str]:
+            mapping: Dict[str, List[str]] = {
+                # direct R without underscore
+                "R10": ["R10", "R_10"],
+                "R25": ["R25", "R_25"],
+                "R50": ["R50", "R_50"],
+                "R75": ["R75", "R_75"],
+                "R100": ["R100", "R_100"],
+                # 1HZ family to 1s streams and fallback to non-1s
+                "1HZ10V": ["1HZ10V", "R_10_1s", "R_10"],
+                "1HZ25V": ["1HZ25V", "R_25_1s", "R_25"],
+                "1HZ50V": ["1HZ50V", "R_50_1s", "R_50"],
+                "1HZ75V": ["1HZ75V", "R_75_1s", "R_75"],
+                "1HZ100V": ["1HZ100V", "R_100_1s", "R_100"],
+                # Unknowns: try direct first; if not present, no fallback
+                "1HZ15V": ["1HZ15V"],
+                "1HZ30V": ["1HZ30V"],
+                "1HZ90V": ["1HZ90V"],
+            }
+            return mapping.get(code, [code])
+
+        resolved: List[str] = []
+        for code in requested:
+            found: Optional[str] = None
+            for cand in candidates(code):
+                if cand in active_symbols:
+                    found = cand
+                    break
+            if found is None:
+                # attempt a loose match by display_name containing the number (best effort)
+                number_part = ''.join(ch for ch in code if ch.isdigit())
+                if number_part:
+                    matches = [sym for sym, rec in active_by_symbol.items() if number_part in (rec.get("display_name") or "")]
+                    if matches:
+                        found = matches[0]
+            if found and found not in resolved:
+                resolved.append(found)
+
+        # Enforce limit
+        return resolved[:limit]
+
+    # Default behavior: auto-select volatility indices, excluding ranges/boom/crash
     filtered: List[str] = []
     for s in symbols:
         if s.get("market") != "synthetic_index":

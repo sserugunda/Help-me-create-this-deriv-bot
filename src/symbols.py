@@ -1,0 +1,15 @@
+DERIV_VOLATILITY_SYMBOLS = [
+    "R_10",
+    "R_25",
+    "R_50",
+    "R_75",
+    "R_100",
+    "RDBEAR",
+    "RDBULL",
+    "R_10S",
+    "R_25S",
+    "R_50S",
+    "R_75S",
+    "R_100S",
+    "R_200S",
+]

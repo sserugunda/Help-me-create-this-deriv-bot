@@ -120,8 +120,8 @@ if canOpen
         settleBar  := bar_index + expireBarsResolved
         plotshape(true, title="FALL Entry", style=shape.triangledown, location=location.abovebar, color=color.new(color.red, 0), size=size.tiny, text="FALL")
 
-// Report equity via strategy so we can see curve
-strategy.equity(equity, title="Binary Equity")
+// Plot custom equity curve for binary results
+plot(equity, title="Binary Equity")
 
 // Basic performance counters
 var int wins = 0
@@ -135,20 +135,17 @@ if canSettle
 // Display table summary
 if showTable and barstate.islast
     var table t = table.new(position.top_right, 2, 6)
+    // Header
     table.cell(t, 0, 0, "Metric", text_color=color.white, bgcolor=color.new(color.gray, 0))
-    table.cell(t, 0, 1, "Value", text_color=color.white, bgcolor=color.new(color.gray, 0))
-
-    table.cell(t, 1, 0, "Stake", text_color=color.white)
+    table.cell(t, 1, 0, "Value",  text_color=color.white, bgcolor=color.new(color.gray, 0))
+    // Rows
+    table.cell(t, 0, 1, "Stake",         text_color=color.white)
     table.cell(t, 1, 1, str.tostring(fixedStake, format.mintick), text_color=color.white)
-
-    table.cell(t, 2, 0, "Payout %", text_color=color.white)
-    table.cell(t, 2, 1, str.tostring(payoutPct, format.mintick), text_color=color.white)
-
-    table.cell(t, 3, 0, "Wins/Losses", text_color=color.white)
-    table.cell(t, 3, 1, str.tostring(wins)+"/"+str.tostring(losses), text_color=color.white)
-
-    table.cell(t, 4, 0, "Net PnL", text_color=color.white)
-    table.cell(t, 4, 1, str.tostring(cumPnL, format.mintick), text_color=color.white)
-
-    table.cell(t, 5, 0, "Equity", text_color=color.white)
-    table.cell(t, 5, 1, str.tostring(equity, format.mintick), text_color=color.white)
+    table.cell(t, 0, 2, "Payout %",      text_color=color.white)
+    table.cell(t, 1, 2, str.tostring(payoutPct, format.mintick),  text_color=color.white)
+    table.cell(t, 0, 3, "Wins/Losses",   text_color=color.white)
+    table.cell(t, 1, 3, str.tostring(wins)+"/"+str.tostring(losses), text_color=color.white)
+    table.cell(t, 0, 4, "Net PnL",       text_color=color.white)
+    table.cell(t, 1, 4, str.tostring(cumPnL, format.mintick),     text_color=color.white)
+    table.cell(t, 0, 5, "Equity",        text_color=color.white)
+    table.cell(t, 1, 5, str.tostring(equity, format.mintick),     text_color=color.white)

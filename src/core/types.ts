@@ -1,0 +1,42 @@
+export type VolatilitySymbol =
+  | 'R_10'
+  | 'R_25'
+  | 'R_50'
+  | 'R_75'
+  | 'R_100'
+  | 'RV_10'
+  | 'RV_25'
+  | 'RV_50'
+  | 'RV_75'
+  | 'RV_100'
+  | 'RDBEAR'
+  | 'RDBULL'
+  | 'BOOM_1000' // placeholder if needed
+  ;
+
+export type Candle = {
+  epoch: number; // seconds
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume?: number;
+};
+
+export type Bias = 'BULLISH' | 'BEARISH' | 'NEUTRAL';
+
+export interface StrategySignal {
+  symbol: string;
+  epoch: number; // candle close time
+  bias: Bias;
+  bullishProbability: number; // 0..1
+  bearishProbability: number; // 0..1
+}
+
+export interface TradeOrder {
+  symbol: string;
+  contractType: 'RISE' | 'FALL';
+  duration: number; // minutes
+  stake: number; // account currency
+}
+

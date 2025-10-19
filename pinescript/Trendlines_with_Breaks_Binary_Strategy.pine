@@ -1,0 +1,154 @@
+// This work is licensed under a Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) https://creativecommons.org/licenses/by-nc-sa/4.0/
+// © LuxAlgo
+
+//@version=5
+strategy("Trendlines with Breaks Binary Strategy [LuxAlgo]", overlay=true, initial_capital=10000, pyramiding=0, commission_value=0, calc_on_every_tick=false)
+
+// -----------------------------------------------------------------------------
+// Inputs (kept faithful to the original indicator where possible)
+// -----------------------------------------------------------------------------
+length     = input.int(14, 'Swing Detection Lookback')
+mult       = input.float(1., 'Slope', minval = 0, step = .1)
+calcMethod = input.string('Atr', 'Slope Calculation Method', options = ['Atr','Stdev','Linreg'])
+backpaint  = input.bool(true, 'Backpaint (display only)')
+
+// Binary options configuration
+binarySection = "Binary Options"
+expireType    = input.string("bars", "Expiry Type", inline="exp", options=["bars","minutes"], group=binarySection)
+expiryBars    = input.int(5, "Expiry Bars", inline="exp", minval=1, group=binarySection)
+expiryMins    = input.int(5, "Expiry Minutes", inline="exp", minval=1, group=binarySection)
+fixedStake    = input.float(100, "Stake per Trade", minval=1, step=1, group=binarySection)
+payoutPct     = input.float(80, "Payout % (on win)", minval=1, maxval=100, step=1, group=binarySection)
+
+// Plot / table options
+showTable     = input.bool(true, "Show Summary Table")
+
+// -----------------------------------------------------------------------------
+// Calculations (copied from the original indicator with minimal changes)
+// -----------------------------------------------------------------------------
+var upper = 0.
+var lower = 0.
+var slope_ph = 0.
+var slope_pl = 0.
+
+var offset = backpaint ? length : 0
+
+n   = bar_index
+src = close
+
+ph = ta.pivothigh(length, length)
+pl = ta.pivotlow(length, length)
+
+slope = switch calcMethod
+    'Atr'    => ta.atr(length) / length * mult
+    'Stdev'  => ta.stdev(src,length) / length * mult
+    'Linreg' => math.abs(ta.sma(src * n, length) - ta.sma(src, length) * ta.sma(n, length)) / ta.variance(n, length) / 2 * mult
+
+slope_ph := ph ? slope : slope_ph
+slope_pl := pl ? slope : slope_pl
+
+upper := ph ? ph : upper - slope_ph
+lower := pl ? pl : lower + slope_pl
+
+var upos = 0
+var dnos = 0
+upos := ph ? 0 : close > upper - slope_ph * length ? 1 : upos
+dnos := pl ? 0 : close < lower + slope_pl * length ? 1 : dnos
+
+// Breakout signals at close of breakout candle
+upBreak   = ta.change(upos) > 0
+downBreak = ta.change(dnos) > 0
+
+// For visualization parity with indicator
+plot(backpaint ? upper : upper - slope_ph * length, 'Upper', color = ph ? na : color.teal, offset = -offset)
+plot(backpaint ? lower : lower + slope_pl * length, 'Lower', color = pl ? na : color.red , offset = -offset)
+
+plotshape(upBreak ? low : na, "Upper Break", shape.labelup, location.absolute, color.teal, text="B", textcolor=color.white, size=size.tiny)
+plotshape(downBreak ? high : na, "Lower Break", shape.labeldown, location.absolute, color.red , text="B", textcolor=color.white, size=size.tiny)
+
+// -----------------------------------------------------------------------------
+// Binary options backtest model
+// - We "enter" at close of the breakout bar
+// - We settle after expiryBars (if bars) or nearest bar >= now+expiryMins (if minutes)
+// - RISE/UP bet wins if settlement close > entry close; FALL/DOWN wins if <
+// - Equal is considered a loss (conservative)
+// -----------------------------------------------------------------------------
+var float equity      = strategy.initial_capital
+var float cumPnL      = 0.0
+var int   openBar     = na
+var float entryPrice  = na
+var int   settleBar   = na
+var bool  isLongRise  = na   // true for RISE, false for FALL
+
+// Resolve expiry in bars
+expireBarsResolved = expireType == "bars" ? expiryBars : math.max(1, math.round(expiryMins * (timeframe.isseconds ? 1.0/60.0 : timeframe.multiplier / 1.0)))
+// Note: For non-1m charts, this is approximate. Prefer 1-minute chart for accuracy.
+
+// Manage existing position resolution
+tradeActive = not na(openBar)
+canSettle   = tradeActive and bar_index >= settleBar
+
+if canSettle
+    settlePrice = close
+    isWin = isLongRise ? (settlePrice > entryPrice) : (settlePrice < entryPrice)
+    profit = isWin ? fixedStake * (payoutPct/100.0) : -fixedStake
+    cumPnL += profit
+    equity += profit
+    label.new(bar_index, close, (isWin ? "WIN "+str.tostring(profit, format.mintick) : "LOSS "+str.tostring(profit, format.mintick)), style=label.style_label_left, textcolor=color.white, color=isWin ? color.new(color.green, 0) : color.new(color.red, 0))
+    // Clear state
+    openBar    := na
+    settleBar  := na
+    entryPrice := na
+    isLongRise := na
+
+// Open new trades on breakout close if no active trade (no overlapping by design)
+canOpen = not tradeActive
+if canOpen
+    if upBreak
+        // RISE bet
+        openBar    := bar_index
+        entryPrice := close
+        isLongRise := true
+        settleBar  := bar_index + expireBarsResolved
+        // plot an entry
+        plotshape(true, title="RISE Entry", style=shape.triangleup, location=location.belowbar, color=color.new(color.green, 0), size=size.tiny, text="RISE")
+    else if downBreak
+        // FALL bet
+        openBar    := bar_index
+        entryPrice := close
+        isLongRise := false
+        settleBar  := bar_index + expireBarsResolved
+        plotshape(true, title="FALL Entry", style=shape.triangledown, location=location.abovebar, color=color.new(color.red, 0), size=size.tiny, text="FALL")
+
+// Report equity via strategy so we can see curve
+strategy.equity(equity, title="Binary Equity")
+
+// Basic performance counters
+var int wins = 0
+var int losses = 0
+if canSettle
+    if isWin
+        wins += 1
+    else
+        losses += 1
+
+// Display table summary
+if showTable and barstate.islast
+    var table t = table.new(position.top_right, 2, 6)
+    table.cell(t, 0, 0, "Metric", text_color=color.white, bgcolor=color.new(color.gray, 0))
+    table.cell(t, 0, 1, "Value", text_color=color.white, bgcolor=color.new(color.gray, 0))
+
+    table.cell(t, 1, 0, "Stake", text_color=color.white)
+    table.cell(t, 1, 1, str.tostring(fixedStake, format.mintick), text_color=color.white)
+
+    table.cell(t, 2, 0, "Payout %", text_color=color.white)
+    table.cell(t, 2, 1, str.tostring(payoutPct, format.mintick), text_color=color.white)
+
+    table.cell(t, 3, 0, "Wins/Losses", text_color=color.white)
+    table.cell(t, 3, 1, str.tostring(wins)+"/"+str.tostring(losses), text_color=color.white)
+
+    table.cell(t, 4, 0, "Net PnL", text_color=color.white)
+    table.cell(t, 4, 1, str.tostring(cumPnL, format.mintick), text_color=color.white)
+
+    table.cell(t, 5, 0, "Equity", text_color=color.white)
+    table.cell(t, 5, 1, str.tostring(equity, format.mintick), text_color=color.white)

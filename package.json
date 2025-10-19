@@ -1,0 +1,33 @@
+{
+  "name": "workspace",
+  "version": "1.0.0",
+  "description": "Help me please",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc -p .",
+    "start": "node -r dotenv/config dist/index.js",
+    "dev": "ts-node -r dotenv/config src/index.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sserugunda/Help-me-create-this-deriv-bot.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sserugunda/Help-me-create-this-deriv-bot/issues"
+  },
+  "homepage": "https://github.com/sserugunda/Help-me-create-this-deriv-bot#readme",
+  "dependencies": {
+    "dayjs": "^1.11.18",
+    "dotenv": "^17.2.3",
+    "node-telegram-bot-api": "^0.66.0",
+    "pino": "^10.1.0",
+    "pino-pretty": "^13.1.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3",
+    "ws": "^8.18.3",
+    "zod": "^4.1.12"
+  }
+}
